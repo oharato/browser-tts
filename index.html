@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browser Voice AI</title>
+    <link rel="stylesheet" href="index.css" />
+</head>
+
+<body>
+    <h1>🎙 Browser Voice AI</h1>
+
+    <!-- Status -->
+    <div class="card" style="padding:1rem 1.5rem;">
+        <div class="status-bar">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">準備中...</span>
+        </div>
+    </div>
+
+    <!-- Mic -->
+    <div class="card">
+        <div class="card-title">音声入力 (STT)</div>
+        <div class="mic-area">
+            <button id="micBtn" title="クリックして話す">🎤</button>
+            <div style="font-size:0.82rem;color:var(--text-muted)">クリックして話す / もう一度クリックで停止</div>
+        </div>
+        <div style="margin-top:1.2rem;">
+            <div class="card-title" style="margin-bottom:0.5rem;">認識テキスト</div>
+            <div class="bubble-box placeholder" id="transcriptBox">ここに認識結果が表示されます</div>
+        </div>
+    </div>
+
+    <!-- AI Response -->
+    <div class="card">
+        <div class="card-title">AI 回答</div>
+        <div class="bubble-box placeholder" id="responseBox">AIの回答がここに表示されます</div>
+        <div class="action-row" style="margin-top:1rem;">
+            <button class="btn" id="stopSpeakBtn">⏹ 読み上げ停止</button>
+            <button class="btn primary" id="respeakBtn">🔊 再読み上げ</button>
+        </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="card">
+        <div class="card-title">設定</div>
+
+        <!-- AI Backend -->
+        <div style="margin-bottom:1.2rem;">
+            <label>AI バックエンド</label>
+            <div class="backend-tabs">
+                <button class="tab-btn active" id="tabNano" onclick="switchBackend('nano')">Chrome Built-in AI (Gemini
+                    Nano)</button>
+                <button class="tab-btn" id="tabApi" onclick="switchBackend('api')">Gemini API (クラウド)</button>
+            </div>
+
+            <div id="nanoPanel">
+                <div class="notice">
+                    Chrome 127+ で「<strong>chrome://flags/#optimization-guide-on-device-model</strong>」を Enabled
+                    に設定し、Gemini Nano のダウンロードが必要です。<br>
+                    また「<strong>chrome://flags/#prompt-api-for-gemini-nano</strong>」も Enabled にしてください。
+                </div>
+            </div>
+
+            <div id="apiPanel" style="display:none;">
+                <label style="margin-top:0.8rem;">Gemini API キー</label>
+                <input type="password" id="apiKey" placeholder="AIza..." />
+                <label style="margin-top:0.8rem;">モデル</label>
+                <select id="modelSelect">
+                    <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                    <option value="gemini-2.5-flash-preview-04-17">gemini-2.5-flash-preview-04-17</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- System prompt -->
+        <div style="margin-bottom:1.2rem;">
+            <label>システムプロンプト</label>
+            <textarea
+                id="systemPrompt">あなたは親切な日本語アシスタントです。音声で読み上げられるため、短く簡潔に答えてください。マークダウン記法は使わず、自然な話し言葉で答えてください。</textarea>
+        </div>
+
+        <!-- STT Language -->
+        <div class="settings-grid">
+            <div>
+                <label>音声認識言語</label>
+                <select id="sttLang">
+                    <option value="ja-JP" selected>日本語</option>
+                    <option value="en-US">English (US)</option>
+                    <option value="en-GB">English (UK)</option>
+                    <option value="zh-CN">中文 (簡体)</option>
+                    <option value="ko-KR">한국어</option>
+                </select>
+            </div>
+            <div>
+                <label>TTS 音声</label>
+                <select id="ttsVoice"></select>
+            </div>
+            <div>
+                <label>読み上げ速度
+                    <div class="range-row">
+                        <input type="range" id="ttsRate" min="0.5" max="2" step="0.1" value="1.0" />
+                        <span class="range-val" id="ttsRateVal">1.0</span>
+                    </div>
+                </label>
+            </div>
+            <div>
+                <label>ピッチ
+                    <div class="range-row">
+                        <input type="range" id="ttsPitch" min="0.5" max="2" step="0.1" value="1.0" />
+                        <span class="range-val" id="ttsPitchVal">1.0</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div id="errMsg" class="err"></div>
+    </div>
+
+    <!-- Debug log -->
+    <div class="card" id="debugCard">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+            <span class="card-title" style="margin:0">デバッグログ</span>
+            <button class="btn" onclick="clearDebug()">クリア</button>
+        </div>
+        <div id="debugLog"
+            style="font-family:monospace;font-size:0.78rem;color:var(--accent2);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.8rem;max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;">
+            準備完了\n</div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+
+</html>
