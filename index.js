@@ -359,22 +359,15 @@ if (!SpeechRecognition) {
         }
     };
 
-    micBtn.addEventListener('click', async () => {
+    micBtn.addEventListener('click', () => {
         if (isRecording) {
             recognition.stop();
             return;
         }
-        // マイク権限を事前確認
-        try {
-            const perm = await navigator.permissions.query({ name: 'microphone' }).catch(() => null);
-            if (perm && perm.state === 'denied') {
-                setStatus('', '⚠️ マイクへのアクセスが拒否されています');
-                showErr('マイクが拒否されています。アドレスバー左のアイコンから権限を「許可」にして再読み込みしてください。');
-                return;
-            }
-        } catch (_) { /* 対応ブラウザのみ */ }
+        // recognition.start() はユーザージェスチャーの同期コンテキストで呼ぶ必要がある
+        // (await を挟むと not-allowed になる)
         recognition.lang = document.getElementById('sttLang').value;
-        speechSynthesis.cancel(); // stop TTS before recording
+        speechSynthesis.cancel();
         recognition.start();
     });
 
