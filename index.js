@@ -345,18 +345,37 @@ if (!SpeechRecognition) {
         isRecording = false;
         micBtn.classList.remove('recording');
         micBtn.textContent = '🎤';
-        if (e.error !== 'aborted') showErr('音声認識エラー: ' + e.error);
-        setStatus('ready', '準備完了');
+        if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+            setStatus('', '⚠️ マイクへのアクセスが拒否されています');
+            showErr('マイクの使用が許可されていません。アドレスバー左のカメラ/マイクアイコンをクリックして「許可」に変更し、ページを再読み込みしてください。');
+        } else if (e.error === 'no-speech') {
+            setStatus('ready', '準備完了');
+            showErr('音声が検出されませんでした。もう一度試してください。');
+        } else if (e.error !== 'aborted') {
+            showErr('音声認識エラー: ' + e.error);
+            setStatus('ready', '準備完了');
+        } else {
+            setStatus('ready', '準備完了');
+        }
     };
 
-    micBtn.addEventListener('click', () => {
+    micBtn.addEventListener('click', async () => {
         if (isRecording) {
             recognition.stop();
-        } else {
-            recognition.lang = document.getElementById('sttLang').value;
-            speechSynthesis.cancel(); // stop TTS before recording
-            recognition.start();
+            return;
         }
+        // マイク権限を事前確認
+        try {
+            const perm = await navigator.permissions.query({ name: 'microphone' }).catch(() => null);
+            if (perm && perm.state === 'denied') {
+                setStatus('', '⚠️ マイクへのアクセスが拒否されています');
+                showErr('マイクが拒否されています。アドレスバー左のアイコンから権限を「許可」にして再読み込みしてください。');
+                return;
+            }
+        } catch (_) { /* 対応ブラウザのみ */ }
+        recognition.lang = document.getElementById('sttLang').value;
+        speechSynthesis.cancel(); // stop TTS before recording
+        recognition.start();
     });
 
     setStatus('ready', '準備完了 — マイクボタンを押して話してください');
